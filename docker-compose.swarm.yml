@@ -1,0 +1,226 @@
+version: '3.9'
+
+# Docker Swarm deployment configuration
+# Note: PostgreSQL runs outside Swarm on a designated node
+
+services:
+  # Redis Cache
+  redis:
+    image: localhost:5000/nexanest/redis:7-alpine
+    command: redis-server --appendonly yes
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    volumes:
+      - redis_data:/data
+    networks:
+      - nexanest-network
+
+  # Message Queue
+  kafka:
+    image: localhost:5000/nexanest/kafka:7.5.0
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - nexanest-network
+    depends_on:
+      - zookeeper
+
+  zookeeper:
+    image: localhost:5000/nexanest/zookeeper:7.5.0
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - nexanest-network
+
+  # API Gateway
+  kong:
+    image: localhost:5000/nexanest/kong:3.4-alpine
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: ${POSTGRES_HOST}
+      KONG_PG_USER: nexanest
+      KONG_PG_PASSWORD: ${POSTGRES_PASSWORD}
+      KONG_PG_DATABASE: kong
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+    ports:
+      - target: 8000
+        published: 8000
+        protocol: tcp
+        mode: ingress
+      - target: 8443
+        published: 8443
+        protocol: tcp
+        mode: ingress
+    networks:
+      - nexanest-network
+      - external-network
+
+  # OpenSearch
+  opensearch:
+    image: localhost:5000/nexanest/opensearch:2.11.0
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.storage == high
+      restart_policy:
+        condition: on-failure
+        delay: 15s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    environment:
+      - discovery.type=single-node
+      - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
+      - DISABLE_SECURITY_PLUGIN=true
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    networks:
+      - nexanest-network
+
+  # Auth Service
+  auth-service:
+    image: localhost:5000/nexanest/auth-service:${VERSION:-latest}
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://nexanest:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/nexanest_auth
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${AUTH_SECRET_KEY}
+      - ENVIRONMENT=production
+    networks:
+      - nexanest-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Portfolio Service
+  portfolio-service:
+    image: localhost:5000/nexanest/portfolio-service:${VERSION:-latest}
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://nexanest:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/nexanest_portfolio
+      - REDIS_URL=redis://redis:6379/1
+      - AUTH_SERVICE_URL=http://auth-service:8001
+      - ENVIRONMENT=production
+    networks:
+      - nexanest-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # MkDocs Documentation
+  docs:
+    image: localhost:5000/nexanest/docs:${VERSION:-latest}
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: ingress
+    networks:
+      - nexanest-network
+      - external-network
+
+networks:
+  nexanest-network:
+    driver: overlay
+    attachable: true
+  external-network:
+    driver: overlay
+    attachable: true
+
+volumes:
+  redis_data:
+    driver: local
+  opensearch_data:
+    driver: local

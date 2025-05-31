@@ -1,0 +1,126 @@
+site_name: NexaNest Documentation
+site_description: AI-Powered Investment Portfolio Management Platform
+site_author: NexaNest Team
+site_url: https://docs.nexanest.local
+
+repo_name: nexanest/nexanest
+repo_url: https://github.com/nexanest/nexanest
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.indexes
+    - toc.follow
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+  icon:
+    logo: material/chart-line
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mermaid2:
+      arguments:
+        theme: 'base'
+  - git-revision-date-localized:
+      enable_creation_date: false
+      fallback_to_build_date: true
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition
+  - meta
+  - attr_list
+  - footnotes
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.mark
+  - pymdownx.tilde
+  - def_list
+  - tables
+  - abbr
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Mission & Vision: mission-vision.md
+  - Getting Started:
+    - Quick Start: getting-started/quickstart.md
+    - Installation: getting-started/installation.md
+    - Configuration: getting-started/configuration.md
+  - Architecture:
+    - Overview: architecture/ARCHITECTURE.md
+    - ADRs: architecture/adrs.md
+  - Services:
+    - Authentication: services/auth.md
+    - Portfolio Management: services/portfolio.md
+    - Market Data: services/market-data.md
+    - AI/ML: services/ai-ml.md
+    - Analytics: services/analytics.md
+    - Notifications: services/notifications.md
+  - Development:
+    - Implementation Plan: development/IMPLEMENTATION_PLAN.md
+    - Setup: development/setup.md
+    - Guidelines: development/guidelines.md
+    - Testing: development/testing.md
+    - Deployment: development/deployment.md
+  - API Reference:
+    - REST API: api/rest.md
+    - WebSocket: api/websocket.md
+    - GraphQL: api/graphql.md
+  - DevLog: devlog/index.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/nexanest
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/u/nexanest
+  version:
+    provider: mike
+
+copyright: Copyright &copy; 2025 NexaNest Team
+
+# Development server configuration
+dev_addr: '0.0.0.0:8007'

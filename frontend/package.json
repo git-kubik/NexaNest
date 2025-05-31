@@ -1,0 +1,12 @@
+{
+  "name": "nexanest-frontend",
+  "version": "0.1.0",
+  "description": "NexaNest Frontend - AI-Powered Investment Portfolio Management",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Frontend not yet implemented'",
+    "build": "echo 'Frontend not yet implemented'",
+    "test": "echo 'No tests yet'",
+    "lint": "echo 'No linting configured yet'"
+  }
+}
