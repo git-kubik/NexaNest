@@ -12,6 +12,14 @@ help:
 	@echo "  make lint            - Run code linters"
 	@echo "  make format          - Format code"
 	@echo ""
+	@echo "Database:"
+	@echo "  make db-start        - Start database containers"
+	@echo "  make db-stop         - Stop database containers"
+	@echo "  make db-restart      - Restart database containers"
+	@echo "  make db-status       - Show database status"
+	@echo "  make db-backup       - Create database backup"
+	@echo "  make db-logs         - Show database logs"
+	@echo ""
 	@echo "Documentation:"
 	@echo "  make docs-serve      - Serve documentation locally"
 	@echo "  make docs-build      - Build documentation"
@@ -24,12 +32,26 @@ help:
 	@echo "  make deploy-swarm    - Deploy to Docker Swarm"
 	@echo "  make swarm-ps        - Show Swarm services"
 	@echo ""
+	@echo "Git & Development:"
+	@echo "  make commit          - Interactive commit with conventional format"
+	@echo "  make log             - Show git log with graph"
+	@echo "  make branch          - Create new feature branch (requires name=)"
+	@echo "  make push            - Push current branch to remote"
+	@echo ""
 	@echo "Utilities:"
 	@echo "  make stop            - Stop all services"
 	@echo "  make clean           - Clean up containers and volumes"
 	@echo "  make logs            - Show logs for all services"
 	@echo "  make ps              - Show running services"
 	@echo "  make health          - Check service health"
+	@echo ""
+	@echo "Remote Docker:"
+	@echo "  make setup-remote-docker    - Show remote Docker setup help"
+	@echo "  make generate-certs         - Generate TLS certificates (requires DOCKER_HOST_IP)"
+	@echo "  make configure-remote-daemon - Configure remote Docker daemon"
+	@echo "  make setup-remote-client    - Set up remote Docker client"
+	@echo "  make test-remote-docker     - Test remote Docker connection"
+	@echo "  make deploy-remote-registry - Deploy registry to remote host"
 
 # Setup development environment
 setup:
@@ -163,6 +185,31 @@ setup-registry:
 	@echo "Setting up local Docker registry..."
 	@./scripts/setup-registry.sh
 
+# Remote Docker setup
+setup-remote-docker:
+	@echo "Setting up remote Docker access..."
+	@./scripts/setup-remote-docker.sh help
+
+generate-certs:
+	@echo "Generating TLS certificates for remote Docker..."
+	@./scripts/setup-remote-docker.sh generate-certs --host $(DOCKER_HOST_IP)
+
+configure-remote-daemon:
+	@echo "Configuring remote Docker daemon..."
+	@./scripts/setup-remote-docker.sh configure-daemon --host $(DOCKER_HOST_IP)
+
+setup-remote-client:
+	@echo "Setting up remote Docker client..."
+	@./scripts/setup-remote-docker.sh setup-client --host $(DOCKER_HOST_IP)
+
+test-remote-docker:
+	@echo "Testing remote Docker connection..."
+	@./scripts/setup-remote-docker.sh test-connection --host $(DOCKER_HOST_IP)
+
+deploy-remote-registry:
+	@echo "Deploying registry to remote Docker host..."
+	@./scripts/setup-remote-docker.sh deploy-registry --host $(DOCKER_HOST_IP)
+
 # Build and push images to local registry
 build-images:
 	@echo "Building and pushing images..."
@@ -171,7 +218,7 @@ build-images:
 # Deploy to Docker Swarm
 deploy-swarm:
 	@echo "Deploying to Docker Swarm..."
-	docker stack deploy -c docker-compose.swarm.yml nexanest
+	docker stack deploy -c infrastructure/docker/docker-compose.swarm.yml nexanest
 
 # Show Swarm services
 swarm-ps:
@@ -192,3 +239,73 @@ install:
 	uv pip install --system -e .
 	@cd services/auth && uv pip install --system -e .
 	@cd services/portfolio && uv pip install --system -e . || true
+
+# Database management targets
+db-start:
+	@echo "Starting databases..."
+	@./scripts/db-manage.sh start
+
+db-stop:
+	@echo "Stopping databases..."
+	@./scripts/db-manage.sh stop
+
+db-restart:
+	@echo "Restarting databases..."
+	@./scripts/db-manage.sh restart
+
+db-status:
+	@echo "Database status:"
+	@./scripts/db-manage.sh status
+
+db-backup:
+	@echo "Creating database backup..."
+	@./scripts/db-manage.sh backup
+
+db-logs:
+	@echo "Showing database logs..."
+	@./scripts/db-manage.sh logs
+
+db-connect-postgres:
+	@echo "Connecting to PostgreSQL..."
+	@./scripts/db-manage.sh psql
+
+db-connect-timescale:
+	@echo "Connecting to TimescaleDB..."
+	@./scripts/db-manage.sh timescale
+
+db-connect-redis:
+	@echo "Connecting to Redis..."
+	@./scripts/db-manage.sh redis
+
+# Git operations
+commit:
+	@echo "Creating conventional commit..."
+	@echo "Available types: feat, fix, docs, style, refactor, perf, test, chore"
+	@read -p "Type (feat/fix/docs/etc): " type; \
+	read -p "Scope (optional, e.g., auth, portfolio): " scope; \
+	read -p "Description: " desc; \
+	read -p "Body (optional, press enter to skip): " body; \
+	read -p "Issue number (optional, e.g., 123): " issue; \
+	if [ -n "$$scope" ]; then scope="($$scope)"; fi; \
+	if [ -n "$$issue" ]; then footer=" (#$$issue)"; fi; \
+	if [ -n "$$body" ]; then \
+		git commit -m "$$type$$scope: $$desc$$footer" -m "$$body"; \
+	else \
+		git commit -m "$$type$$scope: $$desc$$footer"; \
+	fi
+
+log:
+	@git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -10
+
+branch:
+	@if [ -z "$(name)" ]; then \
+		echo "Usage: make branch name=feature-name"; \
+		exit 1; \
+	fi
+	@git checkout -b $(name)
+	@echo "Created and switched to branch: $(name)"
+
+push:
+	@branch=$$(git branch --show-current); \
+	echo "Pushing branch: $$branch"; \
+	git push -u origin $$branch

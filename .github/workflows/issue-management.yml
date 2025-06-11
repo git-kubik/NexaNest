@@ -1,0 +1,240 @@
+name: Issue Management Automation
+
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled]
+  issue_comment:
+    types: [created]
+  pull_request:
+    types: [opened, edited, ready_for_review]
+
+jobs:
+  auto-label:
+    name: Auto Label Issues
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    steps:
+      - name: Add triage label
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: 'status: triage'
+          
+      - name: Add component labels based on title
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.issue;
+            const title = context.payload.issue.title.toLowerCase();
+            const body = context.payload.issue.body?.toLowerCase() || '';
+            const labels = [];
+            
+            // Component detection
+            if (title.includes('frontend') || body.includes('frontend')) {
+              labels.push('component: frontend');
+            }
+            if (title.includes('auth') || body.includes('authentication')) {
+              labels.push('component: auth-service');
+            }
+            if (title.includes('portfolio')) {
+              labels.push('component: portfolio-service');
+            }
+            if (title.includes('market') || title.includes('data')) {
+              labels.push('component: market-data');
+            }
+            if (title.includes('ai') || title.includes('ml')) {
+              labels.push('component: ai-ml');
+            }
+            if (title.includes('infra') || title.includes('deploy')) {
+              labels.push('component: infrastructure');
+            }
+            
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                ...issue,
+                labels: labels
+              });
+            }
+
+  priority-notification:
+    name: Critical Priority Notification
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'issues' && 
+      contains(github.event.label.name, 'priority: critical')
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "🚨 Critical Issue Created",
+              attachments: [{
+                color: 'danger',
+                title: "${{ github.event.issue.title }}",
+                title_link: "${{ github.event.issue.html_url }}",
+                text: "A critical priority issue has been created and requires immediate attention.",
+                fields: [
+                  {
+                    title: "Assigned To",
+                    value: "${{ github.event.issue.assignee.login || 'Unassigned' }}",
+                    short: true
+                  },
+                  {
+                    title: "Component",
+                    value: "${{ join(github.event.issue.labels.*.name, ', ') }}",
+                    short: true
+                  }
+                ]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  stale-issue-check:
+    name: Mark Stale Issues
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/stale@v9
+        with:
+          stale-issue-message: 'This issue has been inactive for 14 days. Please provide an update or it will be closed in 7 days.'
+          stale-issue-label: 'status: stale'
+          days-before-stale: 14
+          days-before-close: 7
+          exempt-issue-labels: 'status: blocked,priority: critical'
+
+  auto-assign:
+    name: Auto Assign Based on Component
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'issues' && 
+      github.event.action == 'labeled'
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const label = context.payload.label.name;
+            const issue = context.issue;
+            
+            // Component to team member mapping
+            const assignments = {
+              'component: frontend': ['frontend-lead'],
+              'component: auth-service': ['auth-lead'],
+              'component: portfolio-service': ['portfolio-lead'],
+              'component: market-data': ['data-lead'],
+              'component: ai-ml': ['ml-lead'],
+              'component: infrastructure': ['devops-lead']
+            };
+            
+            const assignees = assignments[label];
+            if (assignees && assignees.length > 0) {
+              await github.rest.issues.addAssignees({
+                ...issue,
+                assignees: assignees
+              });
+            }
+
+  pr-auto-label:
+    name: Auto Label Pull Requests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    steps:
+      - name: Add review label
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: 'status: review'
+          
+      - name: Size labeling
+        uses: codelytv/pr-size-labeler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_label: 'effort: XS'
+          xs_max_size: 10
+          s_label: 'effort: S'
+          s_max_size: 100
+          m_label: 'effort: M'
+          m_max_size: 500
+          l_label: 'effort: L'
+          l_max_size: 1000
+          xl_label: 'effort: XL'
+
+  scope-change-handler:
+    name: Handle Scope Changes
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'issues' && 
+      contains(github.event.label.name, 'scope-change')
+    steps:
+      - name: Create approval checklist
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.issue;
+            
+            // Add approval-required label
+            await github.rest.issues.addLabels({
+              ...issue,
+              labels: ['approval-required']
+            });
+            
+            // Create approval checklist comment
+            const comment = `## Scope Change Approval Required
+            
+            This issue has been marked as a scope change and requires approval before proceeding.
+            
+            ### Approval Checklist:
+            - [ ] Product Owner: @product-owner
+            - [ ] Engineering Lead: @engineering-lead
+            - [ ] Delivery Lead: @delivery-lead
+            - [ ] Executive Sponsor: @exec-sponsor
+            
+            ### Next Steps:
+            1. Complete the impact analysis in the issue description
+            2. Tag the required approvers
+            3. Once all approvals are received, add the \`approved\` label
+            4. Remove the \`approval-required\` label
+            
+            ⚠️ **Do not begin work until all approvals are received.**`;
+            
+            await github.rest.issues.createComment({
+              ...issue,
+              body: comment
+            });
+
+  link-pr-to-issue:
+    name: Auto-link PR to Issues
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Link PR to Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            
+            // Find issue references in PR body
+            const issueRefs = body.match(/#(\d+)/g);
+            
+            if (issueRefs) {
+              for (const ref of issueRefs) {
+                const issueNumber = ref.replace('#', '');
+                
+                // Add comment to issue
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  body: `🔗 Pull Request #${pr.number} has been opened to address this issue.`
+                });
+                
+                // Update issue status
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  labels: ['status: in-progress']
+                });
+              }
+            }

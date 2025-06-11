@@ -1,0 +1,196 @@
+# GitHub Labels Configuration for NexaNest
+# This file defines the complete labeling taxonomy for project management
+# Use with github-label-sync or similar tools to maintain consistency
+
+# Priority Labels (Red spectrum - #E00000 to #FF6B6B)
+- name: "priority: critical"
+  color: "E00000"
+  description: "Immediate action required - blocking production"
+  
+- name: "priority: high"
+  color: "D73027"
+  description: "High priority - should be addressed soon"
+  
+- name: "priority: medium"
+  color: "FC8D59"
+  description: "Medium priority - plan for next sprint"
+  
+- name: "priority: low"
+  color: "FEE08B"
+  description: "Low priority - nice to have"
+
+# Type Labels (Blue spectrum - #0052CC to #84B8FF)
+- name: "type: bug"
+  color: "0052CC"
+  description: "Something isn't working"
+  
+- name: "type: feature"
+  color: "0066FF"
+  description: "New feature or request"
+  
+- name: "type: enhancement"
+  color: "4C9AFF"
+  description: "Improvement to existing functionality"
+  
+- name: "type: technical-debt"
+  color: "172B4D"
+  description: "Code refactoring or technical improvements"
+  
+- name: "type: security"
+  color: "FF5630"
+  description: "Security-related issue or improvement"
+  
+- name: "type: performance"
+  color: "00C7E6"
+  description: "Performance optimization"
+
+# Status Labels (Green spectrum - #006644 to #79F2C0)
+- name: "status: triage"
+  color: "FFAB00"
+  description: "Needs initial assessment"
+  
+- name: "status: ready"
+  color: "36B37E"
+  description: "Ready to be worked on"
+  
+- name: "status: in-progress"
+  color: "0052CC"
+  description: "Currently being worked on"
+  
+- name: "status: blocked"
+  color: "FF5630"
+  description: "Blocked by external dependency"
+  
+- name: "status: review"
+  color: "6554C0"
+  description: "In code review"
+  
+- name: "status: testing"
+  color: "00C7E6"
+  description: "In testing phase"
+  
+- name: "status: done"
+  color: "00875A"
+  description: "Completed and verified"
+
+# Component Labels (Purple spectrum - #6554C0 to #C7B9FF)
+- name: "component: frontend"
+  color: "6554C0"
+  description: "Frontend application"
+  
+- name: "component: auth-service"
+  color: "8777D9"
+  description: "Authentication service"
+  
+- name: "component: portfolio-service"
+  color: "998DD9"
+  description: "Portfolio management service"
+  
+- name: "component: market-data"
+  color: "B3A7E5"
+  description: "Market data service"
+  
+- name: "component: ai-ml"
+  color: "C7B9FF"
+  description: "AI/ML service"
+  
+- name: "component: analytics"
+  color: "DFD8FF"
+  description: "Analytics service"
+  
+- name: "component: infrastructure"
+  color: "403294"
+  description: "Infrastructure and DevOps"
+  
+- name: "component: database"
+  color: "5243AA"
+  description: "Database-related"
+
+# Effort Estimation Labels (Orange spectrum)
+- name: "effort: XS"
+  color: "FFF0B3"
+  description: "Extra small - less than 2 hours"
+  
+- name: "effort: S"
+  color: "FFD93D"
+  description: "Small - 2-4 hours"
+  
+- name: "effort: M"
+  color: "FFAB00"
+  description: "Medium - 1-2 days"
+  
+- name: "effort: L"
+  color: "FF8B00"
+  description: "Large - 3-5 days"
+  
+- name: "effort: XL"
+  color: "FF6C00"
+  description: "Extra large - more than 5 days"
+
+# Process Labels (Teal spectrum)
+- name: "needs: design"
+  color: "00B8D9"
+  description: "Needs design input"
+  
+- name: "needs: discussion"
+  color: "00C7E6"
+  description: "Needs team discussion"
+  
+- name: "needs: documentation"
+  color: "79E2F2"
+  description: "Needs documentation update"
+  
+- name: "needs: approval"
+  color: "B2F5EA"
+  description: "Requires stakeholder approval"
+
+# Special Labels
+- name: "good first issue"
+  color: "7057FF"
+  description: "Good for newcomers"
+  
+- name: "help wanted"
+  color: "008672"
+  description: "Extra attention is needed"
+  
+- name: "wontfix"
+  color: "FFFFFF"
+  description: "This will not be worked on"
+  
+- name: "duplicate"
+  color: "CFD3D7"
+  description: "This issue or pull request already exists"
+  
+- name: "invalid"
+  color: "E4E669"
+  description: "This doesn't seem right"
+
+# Scope Management Labels
+- name: "scope-change"
+  color: "FF5630"
+  description: "Scope change request"
+  
+- name: "approval-required"
+  color: "FF5630"
+  description: "Requires formal approval"
+  
+- name: "approved"
+  color: "00875A"
+  description: "Approved by stakeholders"
+  
+- name: "deferred"
+  color: "FFAB00"
+  description: "Deferred to future release"
+
+# Environment Labels
+- name: "env: production"
+  color: "FF5630"
+  description: "Production environment"
+  
+- name: "env: staging"
+  color: "FFAB00"
+  description: "Staging environment"
+  
+- name: "env: development"
+  color: "36B37E"
+  description: "Development environment"
