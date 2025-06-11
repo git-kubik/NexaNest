@@ -1,3 +1,29 @@
+---
+title: "Documentation Strategy and Wiki Structure"
+description: "Documentation strategy for NexaNest project management system including wiki organization and maintenance processes"
+authors:
+  - "Documentation Team"
+  - "Project Management Team"
+datetime: "2025-11-06 15:05:00"
+status: "approved"
+tags:
+  - "documentation"
+  - "strategy"
+  - "wiki"
+  - "maintenance"
+  - "content-management"
+category: "business"
+audience: "all"
+complexity: "beginner"
+technology_stack:
+  - "GitHub"
+  - "Markdown"
+  - "MkDocs"
+business_value: "medium"
+compliance_requirements:
+  - "SOC2"
+---
+
 # Documentation Strategy and Wiki Structure
 
 ## Overview

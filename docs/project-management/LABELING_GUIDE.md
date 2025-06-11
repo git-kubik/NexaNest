@@ -1,3 +1,24 @@
+---
+title: "GitHub Labeling Taxonomy Guide"
+description: "Comprehensive labeling system for categorizing, prioritizing, and tracking work items in NexaNest project"
+authors:
+  - "Project Management Team"
+datetime: "2025-11-06 14:45:00"
+status: "approved"
+tags:
+  - "project-management"
+  - "github"
+  - "labels"
+  - "taxonomy"
+  - "workflow"
+category: "business"
+audience: "all"
+complexity: "beginner"
+technology_stack:
+  - "GitHub"
+business_value: "medium"
+---
+
 # GitHub Labeling Taxonomy Guide
 
 ## Overview

@@ -72,6 +72,9 @@ When implementing features:
 # Install dependencies with uv
 make install
 
+# Set up environment and secrets (first time only)
+./scripts/setup-secrets.sh
+
 # Start development environment
 make dev
 
@@ -123,11 +126,15 @@ make docs-lint
 # Set up local registry
 make setup-registry
 
+# Generate production secrets
+./infrastructure/secrets/generate-secrets.sh
+
 # Build and push images
 make build-images
 
-# Deploy to Swarm
-make deploy-swarm
+# Deploy to Swarm with secrets
+docker-compose -f infrastructure/docker/docker-compose.yml \
+               -f infrastructure/docker/docker-compose.secrets.yml up -d
 
 # View Swarm services
 make swarm-ps
@@ -177,3 +184,8 @@ docker-compose ps        # Show running services
 - TimescaleDB: 5433
 - Redis: 6379
 - OpenSearch: 9200
+
+## Project Memories
+
+- Issues are now managed in github issues
+- Discover and use all mcp servers available to you when required

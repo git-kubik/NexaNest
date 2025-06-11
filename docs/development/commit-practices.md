@@ -1,3 +1,29 @@
+---
+title: "Commit and Activity Log Management"
+description: "Best practices for managing development activity logs through Git commits and GitHub features"
+authors:
+  - "Development Team"
+datetime: "2025-11-06 15:35:00"
+status: "approved"
+tags:
+  - "development"
+  - "git"
+  - "commits"
+  - "github"
+  - "workflow"
+  - "best-practices"
+category: "development"
+audience: "developer"
+complexity: "beginner"
+technology_stack:
+  - "Git"
+  - "GitHub"
+  - "Conventional Commits"
+business_value: "medium"
+related_docs:
+  - "../architecture/adrs.md"
+---
+
 # Commit and Activity Log Management
 
 ## Overview

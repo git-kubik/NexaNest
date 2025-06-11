@@ -63,12 +63,23 @@ yarn-error.log*
 .npm
 .yarn
 
-# Environment variables
+# Environment variables and secrets
 .env
 .env.local
 .env.*.local
 .env.development
 .env.production
+.env.db
+.env.test
+
+# Docker secrets
+infrastructure/secrets/secrets/
+
+# Service-specific environment files
+services/*/.env
+services/*/.env.local
+services/*/.env.development
+services/*/.env.production
 
 # IDE
 .vscode/
@@ -150,3 +161,6 @@ local/
 # Secrets
 secrets/
 *.secret
+
+# Claude local commands
+.claude/

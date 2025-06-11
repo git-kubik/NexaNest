@@ -1,3 +1,31 @@
+---
+title: "Project Management System"
+description: "Comprehensive project management documentation for NexaNest using GitHub's native tools"
+authors:
+  - "Project Management Team"
+datetime: "2025-11-06 14:40:00"
+status: "approved"
+tags:
+  - "project-management"
+  - "github"
+  - "workflow"
+  - "documentation"
+category: "business"
+audience: "all"
+complexity: "beginner"
+technology_stack:
+  - "GitHub"
+  - "GitHub Projects"
+  - "GitHub Actions"
+business_value: "high"
+related_docs:
+  - "LABELING_GUIDE.md"
+  - "PROJECT_BOARDS_GUIDE.md"
+  - "REPORTING_DASHBOARDS.md"
+  - "INTEGRATION_GUIDE.md"
+  - "DOCUMENTATION_STRATEGY.md"
+---
+
 # Project Management System
 
 Welcome to the NexaNest project management documentation. This comprehensive system provides everything needed to manage cloud services delivery using GitHub's native tools.

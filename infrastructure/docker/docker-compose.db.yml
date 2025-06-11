@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  # PostgreSQL - Main application database
+  postgres:
+    image: postgres:15
+    container_name: nexanest-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nexanest
+      POSTGRES_USER: nexanest
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexanest_dev_password}
+      POSTGRES_PASSWORD_FILE: ${POSTGRES_PASSWORD_FILE:-}
+      POSTGRES_MULTIPLE_DATABASES: "auth,portfolio,analytics,notifications"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/database/init:/docker-entrypoint-initdb.d:ro
+      - ./infrastructure/database/schemas:/docker-entrypoint-initdb.d/schemas:ro
+      - ./infrastructure/database/postgres.conf:/etc/postgresql/postgresql.conf:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - nexanest-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexanest -d nexanest"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c shared_preload_libraries=pg_stat_statements
+      -c log_statement=all
+      -c log_destination=stderr
+      -c logging_collector=on
+      -c log_directory=/var/log/postgresql
+      -c log_filename=postgresql-%Y-%m-%d.log
+
+  # TimescaleDB - Time-series data for market data and analytics
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: nexanest-timescaledb
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: timescale
+      POSTGRES_USER: timescale
+      POSTGRES_PASSWORD: ${TIMESCALE_PASSWORD:-timescale_dev_password}
+      POSTGRES_PASSWORD_FILE: ${TIMESCALE_PASSWORD_FILE:-}
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+      - ./infrastructure/database/timescale-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5433:5432"
+    networks:
+      - nexanest-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timescale -d timescale"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    command: >
+      postgres
+      -c shared_preload_libraries=timescaledb
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+
+  # Redis - Caching and session storage
+  redis:
+    image: redis:7-alpine
+    container_name: nexanest-redis
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_dev_password}
+      REDIS_PASSWORD_FILE: ${REDIS_PASSWORD_FILE:-}
+    command: >
+      sh -c "
+        if [ -f \"$$REDIS_PASSWORD_FILE\" ]; then
+          REDIS_PASSWORD=$$(cat $$REDIS_PASSWORD_FILE)
+        fi
+        redis-server --appendonly yes --requirepass $$REDIS_PASSWORD
+      "
+    volumes:
+      - redis_data:/data
+      - ./infrastructure/database/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    ports:
+      - "6379:6379"
+    networks:
+      - nexanest-db
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Database management interface
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: nexanest-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@nexanest.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin_dev_password}
+      PGADMIN_DEFAULT_PASSWORD_FILE: ${PGADMIN_PASSWORD_FILE:-}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./infrastructure/database/pgadmin-servers.json:/pgadmin4/servers.json:ro
+    ports:
+      - "5050:80"
+    networks:
+      - nexanest-db
+    depends_on:
+      - postgres
+      - timescaledb
+
+volumes:
+  postgres_data:
+    driver: local
+  timescale_data:
+    driver: local
+  redis_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  nexanest-db:
+    driver: bridge
+    external: false

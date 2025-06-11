@@ -1,0 +1,42 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "NexaNest PostgreSQL",
+            "Group": "NexaNest",
+            "Host": "postgres",
+            "Port": 5432,
+            "MaintenanceDB": "nexanest",
+            "Username": "nexanest",
+            "PassFile": "/pgpass",
+            "SSLMode": "prefer",
+            "SSLCert": "<STORAGE_DIR>/.postgresql/postgresql.crt",
+            "SSLKey": "<STORAGE_DIR>/.postgresql/postgresql.key",
+            "SSLCompression": 0,
+            "Timeout": 10,
+            "UseSSHTunnel": 0,
+            "TunnelHost": "",
+            "TunnelPort": "22",
+            "TunnelUsername": "",
+            "TunnelAuthentication": 0
+        },
+        "2": {
+            "Name": "NexaNest TimescaleDB",
+            "Group": "NexaNest",
+            "Host": "timescaledb",
+            "Port": 5432,
+            "MaintenanceDB": "timescale",
+            "Username": "timescale",
+            "PassFile": "/pgpass",
+            "SSLMode": "prefer",
+            "SSLCert": "<STORAGE_DIR>/.postgresql/postgresql.crt",
+            "SSLKey": "<STORAGE_DIR>/.postgresql/postgresql.key",
+            "SSLCompression": 0,
+            "Timeout": 10,
+            "UseSSHTunnel": 0,
+            "TunnelHost": "",
+            "TunnelPort": "22",
+            "TunnelUsername": "",
+            "TunnelAuthentication": 0
+        }
+    }
+}

@@ -1,3 +1,26 @@
+---
+title: "Reporting Views and Dashboards Guide"
+description: "Reporting structure for NexaNest project management including dashboard configurations and automated reports"
+authors:
+  - "Project Management Team"
+  - "Analytics Team"
+datetime: "2025-11-06 14:55:00"
+status: "approved"
+tags:
+  - "project-management"
+  - "reporting"
+  - "dashboards"
+  - "analytics"
+  - "metrics"
+category: "business"
+audience: "manager"
+complexity: "intermediate"
+technology_stack:
+  - "GitHub Projects"
+  - "GitHub API"
+business_value: "high"
+---
+
 # Reporting Views and Dashboards Guide
 
 ## Overview

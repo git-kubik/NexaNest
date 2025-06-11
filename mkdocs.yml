@@ -92,6 +92,18 @@ nav:
   - Architecture:
     - Overview: architecture/ARCHITECTURE.md
     - ADRs: architecture/adrs.md
+  - Database:
+    - Overview: database/index.md
+    - Connectivity: database/connectivity.md
+    - Schemas:
+      - Overview: database/schemas/index.md
+      - Auth Service: database/schemas/auth.md
+      - Portfolio Service: database/schemas/portfolio.md
+      - TimescaleDB: database/schemas/timescale.md
+    - Operations: database/operations.md
+    - Security: database/security.md
+  - Infrastructure:
+    - Remote Docker Setup: infrastructure/remote-docker-setup.md
   - Services:
     - Authentication: services/auth.md
     - Portfolio Management: services/portfolio.md

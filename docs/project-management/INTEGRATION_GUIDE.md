@@ -1,3 +1,28 @@
+---
+title: "Integration Guidelines"
+description: "Integrating GitHub project management with external tools commonly used in cloud services delivery"
+authors:
+  - "Project Management Team"
+  - "DevOps Team"
+datetime: "2025-11-06 15:00:00"
+status: "approved"
+tags:
+  - "project-management"
+  - "integration"
+  - "external-tools"
+  - "workflow"
+  - "automation"
+category: "operations"
+audience: "developer"
+complexity: "intermediate"
+technology_stack:
+  - "GitHub"
+  - "Slack"
+  - "Jira"
+  - "API integrations"
+business_value: "medium"
+---
+
 # Integration Guidelines
 
 ## Overview

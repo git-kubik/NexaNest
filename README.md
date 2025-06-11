@@ -44,11 +44,16 @@ See [Architecture Documentation](docs/ARCHITECTURE.md) for detailed information.
    cd nexanest
    ```
 
-1. **Copy environment variables**
+1. **Set up environment and secrets**
 
    ```bash
+   # Automated setup with secure password generation
+   ./scripts/setup-secrets.sh
+   
+   # Or manual setup
    cp .env.example .env
-   # Edit .env with your configuration
+   cp .env.db.example .env.db
+   # Edit .env files with your configuration
    ```
 
 1. **Start development environment**
@@ -130,13 +135,33 @@ cd frontend && npm test
 - Git: Conventional commits
 - Testing: Minimum 80% code coverage
 
-## 🔒 Security
+## 🔒 Security & Secrets Management
 
+NexaNest implements enterprise-grade security with comprehensive secrets management:
+
+### Security Features
 - All data encrypted in transit (TLS 1.3) and at rest (AES-256)
 - OAuth2/OIDC authentication with MFA support
 - Row-level security in PostgreSQL
 - API rate limiting and DDoS protection
 - Regular security audits and penetration testing
+
+### Secrets Management
+- **Docker Secrets**: Production-ready secrets management with Docker Swarm/Kubernetes
+- **Environment Variables**: Development-friendly configuration with automatic generation
+- **Service Isolation**: Individual .env files for each microservice
+- **Security Best Practices**: No secrets in git, secure password generation, rotation support
+
+```bash
+# Quick setup with secure password generation
+./scripts/setup-secrets.sh
+
+# Production deployment with Docker secrets
+docker-compose -f infrastructure/docker/docker-compose.yml \
+               -f infrastructure/docker/docker-compose.secrets.yml up -d
+```
+
+See [Secrets Management Documentation](docs/infrastructure/secrets-management.md) for complete details.
 
 ## 📊 Performance Targets
 

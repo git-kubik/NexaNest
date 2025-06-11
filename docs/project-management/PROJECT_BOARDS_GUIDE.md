@@ -1,3 +1,26 @@
+---
+title: "GitHub Projects Configuration Guide"
+description: "Step-by-step instructions for setting up GitHub Projects for NexaNest cloud services delivery team"
+authors:
+  - "Project Management Team"
+  - "DevOps Team"
+datetime: "2025-11-06 14:50:00"
+status: "approved"
+tags:
+  - "project-management"
+  - "github-projects"
+  - "workflow"
+  - "automation"
+  - "configuration"
+category: "business"
+audience: "manager"
+complexity: "intermediate"
+technology_stack:
+  - "GitHub Projects"
+  - "GitHub Actions"
+business_value: "high"
+---
+
 # GitHub Projects Configuration Guide
 
 ## Overview

@@ -1,8 +1,23 @@
 import secrets
+from pathlib import Path
 from typing import Any, List, Optional, Union
 
 from pydantic import AnyHttpUrl, PostgresDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def read_secret_file(file_path: Optional[str]) -> Optional[str]:
+    """Read secret from Docker secrets file if it exists."""
+    if not file_path:
+        return None
+    
+    try:
+        secret_path = Path(file_path)
+        if secret_path.exists():
+            return secret_path.read_text().strip()
+    except Exception:
+        pass
+    return None
 
 
 class Settings(BaseSettings):
@@ -18,12 +33,18 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     API_V1_STR: str = "/api/v1"
 
-    # Security
+    # Security - Docker secrets support
     SECRET_KEY: str = secrets.token_urlsafe(32)
+    SECRET_KEY_FILE: Optional[str] = None
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"
     BCRYPT_ROUNDS: int = 12
+    
+    def get_secret_key(self) -> str:
+        """Get secret key from file or environment variable."""
+        secret_from_file = read_secret_file(self.SECRET_KEY_FILE)
+        return secret_from_file or self.SECRET_KEY
     
     # CORS
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
@@ -37,34 +58,78 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    # Database
+    # Database - Docker secrets support
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_USER: str = "nexanest"
     POSTGRES_PASSWORD: str = "nexanest_dev_password"
-    POSTGRES_DB: str = "nexanest_auth"
+    POSTGRES_PASSWORD_FILE: Optional[str] = None
+    POSTGRES_DB: str = "auth"
     DATABASE_URL: Optional[PostgresDsn] = None
+    
+    def get_postgres_password(self) -> str:
+        """Get PostgreSQL password from file or environment variable."""
+        password_from_file = read_secret_file(self.POSTGRES_PASSWORD_FILE)
+        return password_from_file or self.POSTGRES_PASSWORD
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
-    def assemble_db_connection(cls, v: Optional[str], values: dict[str, Any]) -> Any:
+    def assemble_db_connection(cls, v: Optional[str], info) -> Any:
         if isinstance(v, str):
             return v
+        values = info.data
+        # Use password from file if available, otherwise use environment variable
+        password_file = values.get("POSTGRES_PASSWORD_FILE")
+        password = read_secret_file(password_file) or values.get("POSTGRES_PASSWORD")
+        
         return PostgresDsn.build(
             scheme="postgresql+asyncpg",
-            username=values.data.get("POSTGRES_USER"),
-            password=values.data.get("POSTGRES_PASSWORD"),
-            host=values.data.get("POSTGRES_SERVER"),
-            path=values.data.get("POSTGRES_DB", ""),
+            username=values.get("POSTGRES_USER"),
+            password=password,
+            host=values.get("POSTGRES_SERVER"),
+            path=values.get("POSTGRES_DB", ""),
         )
 
-    # Redis
-    REDIS_URL: str = "redis://localhost:6379/0"
+    # Redis - Docker secrets support
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_PASSWORD: Optional[str] = None
+    REDIS_PASSWORD_FILE: Optional[str] = None
+    REDIS_DB: int = 0
+    REDIS_URL: Optional[str] = None
     
-    # OAuth2 providers
+    def get_redis_password(self) -> Optional[str]:
+        """Get Redis password from file or environment variable."""
+        password_from_file = read_secret_file(self.REDIS_PASSWORD_FILE)
+        return password_from_file or self.REDIS_PASSWORD
+    
+    def get_redis_url(self) -> str:
+        """Construct Redis URL with password from secrets if available."""
+        if self.REDIS_URL:
+            return self.REDIS_URL
+        
+        password = self.get_redis_password()
+        if password:
+            return f"redis://:{password}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+        else:
+            return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+    
+    # OAuth2 providers - Docker secrets support
     GOOGLE_CLIENT_ID: Optional[str] = None
     GOOGLE_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_CLIENT_SECRET_FILE: Optional[str] = None
     GITHUB_CLIENT_ID: Optional[str] = None
     GITHUB_CLIENT_SECRET: Optional[str] = None
+    GITHUB_CLIENT_SECRET_FILE: Optional[str] = None
+    
+    def get_google_client_secret(self) -> Optional[str]:
+        """Get Google client secret from file or environment variable."""
+        secret_from_file = read_secret_file(self.GOOGLE_CLIENT_SECRET_FILE)
+        return secret_from_file or self.GOOGLE_CLIENT_SECRET
+    
+    def get_github_client_secret(self) -> Optional[str]:
+        """Get GitHub client secret from file or environment variable."""
+        secret_from_file = read_secret_file(self.GITHUB_CLIENT_SECRET_FILE)
+        return secret_from_file or self.GITHUB_CLIENT_SECRET
     
     # Email
     SMTP_TLS: bool = True

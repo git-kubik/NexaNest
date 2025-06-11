@@ -98,6 +98,7 @@ graph TB
 - [🎯 Mission & Vision](mission-vision.md)
 - [🚀 Quick Start Guide](getting-started/quickstart.md)
 - [🏗️ System Architecture](architecture/ARCHITECTURE.md)
+- [🔐 Secrets Management](infrastructure/secrets-management.md)
 - [📡 API Reference](api/rest.md)
 - [📚 Development Guide](development/IMPLEMENTATION_PLAN.md)
 
