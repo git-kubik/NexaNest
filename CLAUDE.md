@@ -189,3 +189,4 @@ docker-compose ps        # Show running services
 
 - Issues are now managed in github issues
 - Discover and use all mcp servers available to you when required
+- Use github mcp server for future usage

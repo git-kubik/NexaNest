@@ -1,41 +1,16 @@
 version: '3.9'
 
 services:
-  # Database Services
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: nexanest
-      POSTGRES_USER: nexanest
-      POSTGRES_PASSWORD: nexanest_dev_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nexanest"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  timescaledb:
-    image: timescale/timescaledb:latest-pg15
-    environment:
-      POSTGRES_DB: nexanest_timeseries
-      POSTGRES_USER: nexanest
-      POSTGRES_PASSWORD: nexanest_dev_password
-    ports:
-      - "5433:5432"
-    volumes:
-      - timescale_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
+  # Database Services - DEPLOYED TO pgdb.nn.local
+  # Note: Databases are deployed to remote host pgdb.nn.local
+  # To deploy databases, use:
+  # docker -H ssh://pgdb.nn.local compose -f docker-compose.db-remote.yml up -d
+  # 
+  # For local development with databases on pgdb.nn.local:
+  # - Ensure .env.db is configured with DB_HOST=pgdb.nn.local
+  # - Services will connect to databases on pgdb.nn.local:5432 (PostgreSQL)
+  # - Services will connect to Redis on pgdb.nn.local:6379
+  # - Services will connect to TimescaleDB on pgdb.nn.local:5433
 
   # Message Queue
   kafka:
@@ -68,9 +43,9 @@ services:
     image: kong:3.4-alpine
     environment:
       KONG_DATABASE: postgres
-      KONG_PG_HOST: postgres
+      KONG_PG_HOST: ${POSTGRES_HOST:-pgdb.nn.local}
       KONG_PG_USER: nexanest
-      KONG_PG_PASSWORD: nexanest_dev_password
+      KONG_PG_PASSWORD: ${POSTGRES_PASSWORD:-nexanest_dev_password}
       KONG_PG_DATABASE: kong
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
@@ -82,8 +57,6 @@ services:
       - "8443:8443"  # Proxy SSL
       - "8001:8001"  # Admin API
       - "8444:8444"  # Admin API SSL
-    depends_on:
-      - postgres
     command: >
       sh -c "
         kong migrations bootstrap &&
@@ -115,7 +88,6 @@ services:
       - opensearch
 
 volumes:
-  postgres_data:
-  timescale_data:
-  redis_data:
+  # Note: Database volumes are managed on pgdb.nn.local
+  # postgres_data, timescale_data, redis_data are on remote host
   opensearch_data:

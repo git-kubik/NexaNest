@@ -709,6 +709,13 @@ instrumentation:
 **Decision**: All documentation files must include YAML frontmatter with required metadata fields  
 **Rationale**: Ensure consistent metadata management, enable automated processing, and improve content discoverability
 
+## ADR-015: Database Deployment Strategy
+
+**Status**: Accepted  
+**Date**: 2025-06-20  
+**Decision**: Use hybrid approach with official Docker images and configuration management  
+**Rationale**: Balances security, flexibility, and maintainability for database deployments
+
 ### Context
 
 Documentation quality and consistency are critical for project maintainability and team collaboration. Currently, documentation files lack standardized metadata, making it difficult to:
@@ -1139,6 +1146,7 @@ def audit_documentation():
 | 012 | Australia/Adelaide timezone | Accepted | Medium |
 | 013 | Configurable instrumentation | Accepted | High   |
 | 014 | Mandatory documentation frontmatter | Accepted | Medium |
+| 015 | Database deployment strategy | Accepted | High   |
 
 ## Implementation Notes
 

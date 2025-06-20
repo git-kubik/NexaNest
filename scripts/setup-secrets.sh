@@ -129,6 +129,37 @@ create_db_env_file() {
     print_success ".env.db file created with generated passwords"
 }
 
+# Function to create swarm environment file
+create_swarm_env_file() {
+    local swarm_env_file="$PROJECT_ROOT/.env.swarm"
+    local swarm_env_example="$PROJECT_ROOT/.env.swarm.example"
+    
+    if [[ -f "$swarm_env_file" ]]; then
+        print_warning ".env.swarm file already exists. Skipping creation."
+        return
+    fi
+    
+    if [[ ! -f "$swarm_env_example" ]]; then
+        print_error ".env.swarm.example not found"
+        return 1
+    fi
+    
+    print_info "Creating .env.swarm file from template..."
+    cp "$swarm_env_example" "$swarm_env_file"
+    
+    # Generate secure passwords
+    local registry_password=$(generate_password)
+    
+    # Update .env.swarm file
+    sed -i.bak "s/secure_registry_password_here/$registry_password/g" "$swarm_env_file"
+    
+    # Remove backup file
+    rm -f "$swarm_env_file.bak"
+    
+    print_success ".env.swarm file created"
+    print_warning "Please configure your actual Swarm node IPs and SSH key paths in .env.swarm"
+}
+
 # Function to create Docker secrets
 create_docker_secrets() {
     print_info "Setting up Docker secrets..."
@@ -221,8 +252,12 @@ show_summary() {
     print_info "Next steps:"
     echo "1. Review and update API keys in .env file"
     echo "2. Update service-specific configurations in services/*/.env"
-    echo "3. For production, use Docker secrets with:"
-    echo "   docker-compose -f docker-compose.yml -f docker-compose.secrets.yml up"
+    echo "3. Configure Docker Swarm nodes in .env.swarm with actual IPs and SSH keys"
+    echo "4. For local development, use Docker Compose:"
+    echo "   docker-compose -f infrastructure/docker/docker-compose.db.yml up -d"
+    echo "5. For production, deploy to Docker Swarm:"
+    echo "   ./scripts/swarm-manage.sh setup"
+    echo "   ./scripts/swarm-manage.sh deploy"
     echo ""
     print_warning "Security reminders:"
     echo "- Never commit .env files or secrets/ directory to version control"
@@ -239,6 +274,7 @@ main() {
     # Create environment files
     create_env_file
     create_db_env_file
+    create_swarm_env_file
     
     # Create service environment files
     create_service_env_files

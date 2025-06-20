@@ -71,6 +71,7 @@ yarn-error.log*
 .env.production
 .env.db
 .env.test
+.env.swarm
 
 # Docker secrets
 infrastructure/secrets/secrets/
@@ -80,6 +81,14 @@ services/*/.env
 services/*/.env.local
 services/*/.env.development
 services/*/.env.production
+
+# SSH keys and infrastructure secrets
+*.pem
+*.key
+id_rsa*
+swarm-*.key
+infrastructure/ssh/
+.ssh/
 
 # IDE
 .vscode/
@@ -164,3 +173,4 @@ secrets/
 
 # Claude local commands
 .claude/
+.archive/

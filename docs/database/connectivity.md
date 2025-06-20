@@ -135,7 +135,7 @@ graph TB
 
 #### Primary Database (Port 5432)
 ```yaml
-Host: localhost (development) / postgres.nexanest.internal (production)
+Host: pgdb.nn.local (development) / postgres.nexanest.internal (production)
 Port: 5432
 Databases:
   - nexanest (main)
@@ -153,33 +153,33 @@ Connection Pool: 20 connections per service
 
 **Auth Service**
 ```
-postgresql://nexanest:${POSTGRES_PASSWORD}@localhost:5432/auth
+postgresql://nexanest:${POSTGRES_PASSWORD}@pgdb.nn.local:5432/auth
 ```
 
 **Portfolio Service**
 ```
-postgresql://nexanest:${POSTGRES_PASSWORD}@localhost:5432/portfolio
+postgresql://nexanest:${POSTGRES_PASSWORD}@pgdb.nn.local:5432/portfolio
 ```
 
 **Analytics Service**
 ```
 # Primary (writes)
-postgresql://nexanest:${POSTGRES_PASSWORD}@localhost:5432/analytics
+postgresql://nexanest:${POSTGRES_PASSWORD}@pgdb.nn.local:5432/analytics
 
-# Replica (reads)
-postgresql://nexanest:${POSTGRES_PASSWORD}@localhost:5433/analytics
+# Replica (reads) - future implementation
+postgresql://nexanest:${POSTGRES_PASSWORD}@pgdb.nn.local:5433/analytics
 ```
 
 **Notification Service**
 ```
-postgresql://nexanest:${POSTGRES_PASSWORD}@localhost:5432/notifications
+postgresql://nexanest:${POSTGRES_PASSWORD}@pgdb.nn.local:5432/notifications
 ```
 
 ### TimescaleDB Connections
 
 #### Time-Series Database (Port 5433)
 ```yaml
-Host: localhost (development) / timescale.nexanest.internal (production)
+Host: pgdb.nn.local (development) / timescale.nexanest.internal (production)
 Port: 5433
 Database: timescale
 User: timescale
@@ -190,7 +190,7 @@ Connection Pool: 50 connections (high throughput)
 
 #### Connection String
 ```
-postgresql://timescale:${TIMESCALE_PASSWORD}@localhost:5433/timescale
+postgresql://timescale:${TIMESCALE_PASSWORD}@pgdb.nn.local:5433/timescale
 ```
 
 **Used by:**
@@ -203,7 +203,7 @@ postgresql://timescale:${TIMESCALE_PASSWORD}@localhost:5433/timescale
 
 #### Cache and Sessions (Port 6379)
 ```yaml
-Host: localhost (development) / redis.nexanest.internal (production)
+Host: pgdb.nn.local (development) / redis.nexanest.internal (production)
 Port: 6379
 Password: ${REDIS_PASSWORD}
 SSL: enabled (production)
@@ -220,32 +220,32 @@ Database Allocation:
 
 **Auth Service (Sessions)**
 ```
-redis://:${REDIS_PASSWORD}@localhost:6379/2
+redis://:${REDIS_PASSWORD}@pgdb.nn.local:6379/2
 ```
 
 **Portfolio Service (Cache)**
 ```
-redis://:${REDIS_PASSWORD}@localhost:6379/0
+redis://:${REDIS_PASSWORD}@pgdb.nn.local:6379/0
 ```
 
 **Market Data Service (Real-time)**
 ```
-redis://:${REDIS_PASSWORD}@localhost:6379/1
+redis://:${REDIS_PASSWORD}@pgdb.nn.local:6379/1
 ```
 
 **Analytics Service**
 ```
-redis://:${REDIS_PASSWORD}@localhost:6379/5
+redis://:${REDIS_PASSWORD}@pgdb.nn.local:6379/5
 ```
 
 **Notification Service**
 ```
-redis://:${REDIS_PASSWORD}@localhost:6379/3
+redis://:${REDIS_PASSWORD}@pgdb.nn.local:6379/3
 ```
 
 **AI/ML Service**
 ```
-redis://:${REDIS_PASSWORD}@localhost:6379/4
+redis://:${REDIS_PASSWORD}@pgdb.nn.local:6379/4
 ```
 
 ## Service Communication Patterns
@@ -463,17 +463,23 @@ graph TB
 
 ### Development (.env.db)
 ```bash
+# Database Host Configuration
+DB_HOST=pgdb.nn.local
+
 # PostgreSQL
+POSTGRES_HOST=${DB_HOST}
 POSTGRES_PASSWORD=nexanest_dev_password
 POSTGRES_USER=nexanest
 POSTGRES_DB=nexanest
 
 # TimescaleDB
+TIMESCALE_HOST=${DB_HOST}
 TIMESCALE_PASSWORD=timescale_dev_password
 TIMESCALE_USER=timescale
 TIMESCALE_DB=timescale
 
 # Redis
+REDIS_HOST=${DB_HOST}
 REDIS_PASSWORD=redis_dev_password
 
 # PgAdmin
@@ -606,7 +612,8 @@ ORDER BY pg_database_size(datname) DESC;
 
 ## Related Documentation
 
+- [Database Host Setup - pgdb.nn.local](../infrastructure/database-host-setup.md)
 - [Database Architecture](architecture.md)
 - [Schema Documentation](schemas/index.md)
-- [Operations Guide](operations.md)
-- [Security Documentation](security.md)
+- [SSH Access Setup Guide](../infrastructure/ssh-access-setup.md)
+- [ADR-015: Database Deployment Strategy](../architecture/adr-015-database-deployment-strategy.md)

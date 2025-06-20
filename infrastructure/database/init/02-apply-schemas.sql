@@ -3,11 +3,11 @@
 
 -- Apply auth service schema
 \echo 'Applying auth service schema...'
-\i '/docker-entrypoint-initdb.d/schemas/auth-schema.sql'
+\i '/docker-entrypoint-initdb.d/auth-schema.sql'
 
 -- Apply portfolio service schema  
 \echo 'Applying portfolio service schema...'
-\i '/docker-entrypoint-initdb.d/schemas/portfolio-schema.sql'
+\i '/docker-entrypoint-initdb.d/portfolio-schema.sql'
 
 -- Note: Analytics and notifications schemas will be created when those services are implemented
 
